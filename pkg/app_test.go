@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-var tmpFile = "/tmp/script/p.log"
-var dir = "/tmp/script"
+var tmpFile = "./tmp/p.log"
+var dir = "./tmp"
 
 func TestMain(m *testing.M) {
 	SetupFunction()
