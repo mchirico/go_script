@@ -75,7 +75,7 @@ func WriteData(file string, data []byte) (int, int64, error) {
 
 // LogProcess:
 //   Run process and return bytes written and total bytes in file
-func (s *Script) LogProcess(ctx context.Context) (int, int64) {
+func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
 	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
 	cmd := exec.CommandContext(ctx, "sh", "-c", s.Command)
@@ -89,47 +89,52 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64) {
 	if err != nil {
 		panic(err)
 	}
-	return n, fileSize
+	return n, fileSize, output
 
 }
 
-func (s *Script) Process(milliseconds time.Duration, sizeLimit int64) int64 {
+func (s *Script) Process(milliseconds time.Duration, sizeLimit int64) []byte {
 
 	ctx, cancel := context.WithTimeout(context.Background(),
 		milliseconds*time.Millisecond)
 	defer cancel()
 
-	_, size := s.LogProcess(ctx)
+	_, size, output := s.LogProcess(ctx)
 	if size > sizeLimit {
 		ZeroOut(s.Log)
 	}
-	return size
+	return output
 
 }
 
 func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit int64) {
 
-	gen := func(ctx context.Context) <-chan int64 {
-		dst := make(chan int64)
-		size := s.Process(milliseconds, sizeLimit)
+	gen := func(ctx context.Context) <-chan []byte {
+		dst := make(chan []byte)
+		output := s.Process(milliseconds, sizeLimit)
 		go func() {
 			for {
 				select {
 
 				case <-ctx.Done():
+					dst <- []byte{}
 					return // returning not to leak the goroutine
-				case dst <- size:
-					size = s.Process(milliseconds, sizeLimit)
+				case dst <- output:
+					output = s.Process(milliseconds, sizeLimit)
 				}
 			}
 		}()
 		return dst
 	}
 
-	for n := range gen(ctx) {
-		fmt.Println(n)
+	for output := range gen(ctx) {
 
+		// TODO: We'll want to compare last two results
+		if 1 != 1 {
+			fmt.Println(output)
+		}
 		if ctx.Err() != nil {
+			log.Printf("calling break")
 			break
 		}
 
