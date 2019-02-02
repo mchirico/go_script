@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var tmpFile = "./tmp/p.log"
+var tmpFile = "/tmp/p.log"
 var dir = "./tmp"
 
 func TestMain(m *testing.M) {
@@ -19,12 +19,12 @@ func TestMain(m *testing.M) {
 }
 
 func SetupFunction() {
-	MakeDir(dir)
+	//MakeDir(dir)
 }
 
 func TeardownFunction() {
 	os.RemoveAll(tmpFile)
-	os.RemoveAll(dir)
+	//os.RemoveAll(dir)
 }
 
 func TestLogProcessKill(t *testing.T) {
