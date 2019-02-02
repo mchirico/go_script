@@ -35,3 +35,20 @@ func logProcessTimeout() {
 	s.LogProcess(ctx)
 
 }
+
+func TestZeroOut(t *testing.T) {
+
+	n, err := ZeroOut("/tmp/p.log")
+	if err != nil && n != 0 {
+		t.FailNow()
+	}
+
+	if n, tot, err := WriteData("/tmp/p.log", []byte("This is a test")); err != nil {
+		t.FailNow()
+	} else {
+		if tot <= 0 || n <= 0 {
+			t.Fail()
+		}
+	}
+
+}

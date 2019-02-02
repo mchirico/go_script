@@ -29,28 +29,47 @@ func (s *Script) ReadConfig() {
 
 }
 
-func writeData(file string, slurp []byte) (int64, error) {
+type Writer interface {
+	Write(file string, data []byte) (n int, err error)
+}
 
-	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+func ZeroOut(file string) (int64, error) {
+
+	_ = os.Remove(file)
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return -1, err
+		log.Panic(err)
 	}
-
 	defer f.Close()
-
-	if _, err = f.Write(slurp); err != nil {
-		return -1, err
-	}
 
 	if fi, err := f.Stat(); err != nil {
 		return -1, err
 	} else {
 		f.WriteString(fmt.Sprintf("file size:%v\n", fi.Size()))
-		return fi.Size(), nil
+		return fi.Size(), err
 	}
 }
 
-func (s *Script) LogProcess(ctx context.Context) int64 {
+func WriteData(file string, data []byte) (int, int64, error) {
+
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return -1, -1, err
+	}
+	defer f.Close()
+
+	n, e := f.Write(data)
+	if fi, err := f.Stat(); err != nil {
+		return n, -1, err
+	} else {
+		f.WriteString(fmt.Sprintf("file size:%v\n", fi.Size()))
+		return n, fi.Size(), e
+	}
+}
+
+// LogProcess:
+//   Run process and return bytes written and total bytes in file
+func (s *Script) LogProcess(ctx context.Context) (int, int64) {
 
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
@@ -58,15 +77,15 @@ func (s *Script) LogProcess(ctx context.Context) int64 {
 	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
 	cmd := exec.CommandContext(ctx, "sh", "-c", s.Command)
 
-	slurp, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	filesize, err := writeData(s.Log, slurp)
+	n, fileSize, err := WriteData(s.Log, output)
 	if err != nil {
 		panic(err)
 	}
-	return filesize
+	return n, fileSize
 
 }
