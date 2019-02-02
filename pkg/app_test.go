@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var tmpFile = "/tmp/p.log"
+
 func TestLogProcessKill(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
 		logProcessTimeout()
@@ -31,24 +33,24 @@ func logProcessTimeout() {
 
 	s := Script{}
 	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
-	s.Log = "/tmp/p.log"
+	s.Log = tmpFile
 	s.LogProcess(ctx)
 
 }
 
 func TestZeroOut(t *testing.T) {
 
-	n, err := ZeroOut("/tmp/p.log")
-	if err != nil && n != 0 {
+	if n, err := ZeroOut(tmpFile); err != nil && n != 0 {
 		t.FailNow()
 	}
 
-	if n, tot, err := WriteData("/tmp/p.log", []byte("This is a test")); err != nil {
+	if n, tot, err := WriteData(tmpFile, []byte("This is a test")); err !=
+		nil || tot <= 0 || n <= 0 {
+		t.Errorf("Can't write data to temp file")
+	}
+
+	if n, err := ZeroOut(tmpFile); err != nil && n != 0 {
 		t.FailNow()
-	} else {
-		if tot <= 0 || n <= 0 {
-			t.Fail()
-		}
 	}
 
 }
