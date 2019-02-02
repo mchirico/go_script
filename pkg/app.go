@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"time"
 )
 
 type Script struct {
@@ -31,6 +32,11 @@ func (s *Script) ReadConfig() {
 
 type Writer interface {
 	Write(file string, data []byte) (n int, err error)
+}
+
+func MakeDir(dir string) {
+	os.Mkdir(dir, 0777)
+	//os.Rename(main_file, old_file)
 }
 
 func ZeroOut(file string) (int64, error) {
@@ -71,9 +77,6 @@ func WriteData(file string, data []byte) (int, int64, error) {
 //   Run process and return bytes written and total bytes in file
 func (s *Script) LogProcess(ctx context.Context) (int, int64) {
 
-	s.Mutex.Lock()
-	defer s.Mutex.Unlock()
-
 	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
 	cmd := exec.CommandContext(ctx, "sh", "-c", s.Command)
 
@@ -87,5 +90,49 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64) {
 		panic(err)
 	}
 	return n, fileSize
+
+}
+
+func (s *Script) Process(milliseconds time.Duration, sizeLimit int64) int64 {
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		milliseconds*time.Millisecond)
+	defer cancel()
+
+	_, size := s.LogProcess(ctx)
+	if size > sizeLimit {
+		ZeroOut(s.Log)
+	}
+	return size
+
+}
+
+func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit int64) {
+
+	gen := func(ctx context.Context) <-chan int64 {
+		dst := make(chan int64)
+		size := s.Process(milliseconds, sizeLimit)
+		go func() {
+			for {
+				select {
+
+				case <-ctx.Done():
+					return // returning not to leak the goroutine
+				case dst <- size:
+					size = s.Process(milliseconds, sizeLimit)
+				}
+			}
+		}()
+		return dst
+	}
+
+	for n := range gen(ctx) {
+		fmt.Println(n)
+
+		if ctx.Err() != nil {
+			break
+		}
+
+	}
 
 }

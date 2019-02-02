@@ -8,7 +8,24 @@ import (
 	"time"
 )
 
-var tmpFile = "/tmp/p.log"
+var tmpFile = "/tmp/script/p.log"
+var dir = "/tmp/script"
+
+func TestMain(m *testing.M) {
+	SetupFunction()
+	retCode := m.Run()
+	TeardownFunction()
+	os.Exit(retCode)
+}
+
+func SetupFunction() {
+	MakeDir(dir)
+}
+
+func TeardownFunction() {
+	os.RemoveAll(tmpFile)
+	os.RemoveAll(dir)
+}
 
 func TestLogProcessKill(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
@@ -52,5 +69,34 @@ func TestZeroOut(t *testing.T) {
 	if n, err := ZeroOut(tmpFile); err != nil && n != 0 {
 		t.FailNow()
 	}
+
+}
+
+func TestLoopWithTimeout(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		2000*time.Millisecond)
+	defer cancel()
+
+	s := Script{}
+	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	s.Log = tmpFile
+
+	s.Loop(ctx, 1000, 200000)
+
+}
+
+// TODO: Implement this...
+func TestLoopSize(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		2000*time.Millisecond)
+	defer cancel()
+
+	s := Script{}
+	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	s.Log = tmpFile
+
+	s.Loop(ctx, 1000, 200000)
 
 }
