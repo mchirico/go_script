@@ -49,7 +49,7 @@ func logProcessTimeout() {
 	defer cancel()
 
 	s := Script{}
-	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	s.Command = `sleep 3`
 	s.Log = tmpFile
 	s.LogProcess(ctx)
 
