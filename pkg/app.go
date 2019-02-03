@@ -15,18 +15,25 @@ import (
 // Script is may way to these routines
 type Script struct {
 	sync.Mutex
-	Command    string `json:"command"`
-	Log        string `json:"log"`
-	ArchiveLog string `json:"logArchive"`
-	LoopDelay  int    `json:"LoopDelay"`
-	Analyze    analyze.A
+	JSON    JSON
+	Analyze analyze.A
+}
+
+// JSON read in from config
+type JSON struct {
+	Command       string `json:"command"`
+	Log           string `json:"log"`
+	LogSizeLimit  int    `json:"logSizeLimit"`
+	ArchiveLog    string `json:"logArchive"`
+	LoopDelay     int    `json:"loopDelay"`
+	DieAfterHours int    `json:"dieAfterNumHours"`
 }
 
 // ReadConfig reads configuration
 func (s *Script) ReadConfig() {
-	s.Command = "body() { IFS= read -r header; printf '%s %s\n %s\n' `date \"+%Y-%m %H:%M:%S\"` \"$header\"; \"$@\"; } && ps aux| body sort -n -r -k 4 && free"
-	s.Log = "/tmp/s.log"
-	s.ArchiveLog = "/tmp/archive/s.log"
+	s.JSON.Command = "body() { IFS= read -r header; printf '%s %s\n %s\n' `date \"+%Y-%m %H:%M:%S\"` \"$header\"; \"$@\"; } && ps aux| body sort -n -r -k 4 && free"
+	s.JSON.Log = "/tmp/s.log"
+	s.JSON.ArchiveLog = "/tmp/archive/s.log"
 
 }
 
@@ -87,14 +94,16 @@ func WriteData(file string, data []byte) (int, int64, error) {
 func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
 	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
-	cmd := exec.CommandContext(ctx, "sh", "-c", s.Command)
+	cmd := exec.CommandContext(ctx, "sh", "-c", s.JSON.Command)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("LogProcess command: %s", s.JSON.Command)
+		log.Fatalf("LogProcess: %v", err)
 	}
 
-	n, fileSize, err := WriteData(s.Log, output)
+	log.Println(string(output))
+	n, fileSize, err := WriteData(s.JSON.Log, output)
 	if err != nil {
 		panic(err)
 	}
@@ -111,7 +120,7 @@ func (s *Script) Process(milliseconds time.Duration, sizeLimit int64) []byte {
 
 	_, size, output := s.LogProcess(ctx)
 	if size > sizeLimit {
-		ZeroOut(s.Log)
+		ZeroOut(s.JSON.Log)
 	}
 	return output
 
@@ -123,6 +132,7 @@ func delay(delay int) {
 	} else {
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
+
 }
 
 // Loop through commands
@@ -136,13 +146,14 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit
 				select {
 
 				case <-ctx.Done():
+					log.Printf("ctx.Done() in Loop")
 					dst <- []byte{}
 					return // returning not to leak the goroutine
 				case dst <- output:
 					output = s.Process(milliseconds, sizeLimit)
 				}
 
-				delay(s.LoopDelay)
+				delay(s.JSON.LoopDelay)
 
 			}
 		}()

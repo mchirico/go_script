@@ -10,6 +10,8 @@ matrix:
     os:
     - linux
     install:
+    - go get github.com/axw/gocov/gocov
+    - go install github.com/axw/gocov/gocov
     - go get github.com/prometheus/client_golang/prometheus
     - go get github.com/prometheus/client_golang/prometheus/promauto
     - go get github.com/prometheus/client_golang/prometheus/promhttp
@@ -20,11 +22,14 @@ matrix:
     - chmod +x ./cc-test-reporter
     - "./cc-test-reporter before-build"
     script:
-    - go test -race -v -coverprofile=c0.out github.com/mchirico/go_script/pkg
-    - go test -race -v -coverprofile=c1.out github.com/mchirico/go_script/prometheus        
+    - go test -race -v -coverprofile=c.out github.com/mchirico/go_script/pkg github.com/mchirico/go_script/jsonconfig github.com/mchirico/go_script/prometheus github.com/mchirico/go_script/cmd/script
+    - gocov test github.com/mchirico/go_script/pkg github.com/mchirico/go_script/jsonconfig github.com/mchirico/go_script/prometheus github.com/mchirico/go_script/cmd/script > cc.out
     after_success:
-    - cat c0.out c1.out > c.out
+    - # mv c0.out  c.out
+    - # tail c1.out -n+1 >> c.out
     - bash <(curl -s https://codecov.io/bash)
+    - pwd
+    - find . -iname '*c.out*'
     - "./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT"
 
 

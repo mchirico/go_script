@@ -6,6 +6,7 @@ import (
 	"github.com/mchirico/go_script/analyze"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 )
@@ -51,8 +52,8 @@ func logProcessTimeout() {
 	defer cancel()
 
 	s := Script{}
-	s.Command = `sleep 3`
-	s.Log = tmpFile
+	s.JSON.Command = `sleep 3`
+	s.JSON.Log = tmpFile
 	s.LogProcess(ctx)
 
 }
@@ -81,10 +82,19 @@ func TestLoopWithTimeout(t *testing.T) {
 	defer cancel()
 
 	s := Script{}
-	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
-	s.Log = tmpFile
+	s.JSON.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	s.JSON.Log = tmpFile
 
 	s.Loop(ctx, 1000, 200000)
+
+	data, err := ReadFile(tmpFile)
+	if err != nil {
+		t.Fatalf("Got err reading %v err: %v\n", tmpFile, err)
+	}
+
+	if strings.Contains(data, "STAT START") != true {
+		t.Fatalf("Expected: %v, got: %v\n", "STAT STARTED", data)
+	}
 
 }
 
@@ -99,9 +109,9 @@ func TestLoopSize(t *testing.T) {
 
 	fmt.Printf("s.Analyze=%v", s.Analyze)
 	s.Analyze = analyze.Print
-	s.Command = `ps aux|head -n4`
-	s.LoopDelay = 2
-	s.Log = tmpFile
+	s.JSON.Command = `ps aux|head -n4`
+	s.JSON.LoopDelay = 2
+	s.JSON.Log = tmpFile
 
 	s.Loop(ctx, 1000, 200000)
 

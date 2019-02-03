@@ -8,28 +8,31 @@ package main
 
 import (
 	"context"
+	"flag"
+	"github.com/mchirico/go_script/jsonconfig"
 	"github.com/mchirico/go_script/pkg"
+	"log"
 	"time"
 )
 
 func main() {
 
-	ctx, cancel := context.WithTimeout(context.Background(),
-		1000*time.Millisecond)
-	defer cancel()
+	var configFile string
+	flag.StringVar(&configFile, "configFile", ".script", "Configuration file")
+	flag.Parse()
 
 	s := pkg.Script{}
-	s.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
-	s.Log = "/tmp/p.log"
 
-	for {
-		_, size := s.LogProcess(ctx)
+	err := jsonconfig.ReadJSON(configFile, &s.JSON)
+	if err != nil {
 
-		time.Sleep(3 * time.Second)
-		if size > 1533791 {
-			pkg.ZeroOut(s.Log)
-		}
-
+		log.Fatalf("cannot read config:")
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Duration(s.JSON.DieAfterHours)*time.Hour)
+	defer cancel()
+
+	s.Loop(ctx, 1000, 20000)
 
 }
