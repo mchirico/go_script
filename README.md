@@ -11,5 +11,6 @@ Go script to run troubleshooting commands without creating large logs
 go get github.com/prometheus/client_golang/prometheus
 go get github.com/prometheus/client_golang/prometheus/promauto
 go get github.com/prometheus/client_golang/prometheus/promhttp
+go get -u github.com/gorilla/mux
 
 ```
