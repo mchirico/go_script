@@ -22,8 +22,8 @@ matrix:
     - chmod +x ./cc-test-reporter
     - "./cc-test-reporter before-build"
     script:
-    - go test -race -v -coverprofile=c.out github.com/mchirico/go_script/pkg github.com/mchirico/go_script/jsonconfig github.com/mchirico/go_script/prometheus github.com/mchirico/go_script/cmd/script
-    - gocov test github.com/mchirico/go_script/pkg github.com/mchirico/go_script/jsonconfig github.com/mchirico/go_script/prometheus github.com/mchirico/go_script/cmd/script > cc.out
+    - go test -race -v -coverprofile=c.out github.com/mchirico/go_script/...
+    - gocov test github.com/mchirico/go_script/... > cc.out
     after_success:
     - # mv c0.out  c.out
     - # tail c1.out -n+1 >> c.out
