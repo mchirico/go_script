@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/mchirico/go_script.svg?branch=master)](https://travis-ci.org/mchirico/go_script)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9451bd1a6c801dd5eedb/maintainability)](https://codeclimate.com/github/mchirico/go_script/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9451bd1a6c801dd5eedb/test_coverage)](https://codeclimate.com/github/mchirico/go_script/test_coverage)
+[![codecov](https://codecov.io/gh/mchirico/go_script/branch/master/graph/badge.svg)](https://codecov.io/gh/mchirico/go_script)
 # go_script
 Go script to run troubleshooting commands without creating large logs
 
@@ -12,5 +13,14 @@ go get github.com/prometheus/client_golang/prometheus
 go get github.com/prometheus/client_golang/prometheus/promauto
 go get github.com/prometheus/client_golang/prometheus/promhttp
 go get -u github.com/gorilla/mux
+
+```
+
+## Build
+
+```bash
+export GOOS=linux
+export GOARCH=arm
+go build -o scriptLinux github.com/mchirico/go_script/cmd/script
 
 ```

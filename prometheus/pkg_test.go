@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -39,7 +40,17 @@ func TestRoot(t *testing.T) {
 	}
 }
 
-func TestMetrics(t *testing.T) {
+func TestCustomRegistry(t *testing.T) {
+	if result := CustomRegistry(); strings.Contains(result,
+		"lithobates-catesbeianus") != true {
+		t.Errorf("Expected an array. Got %s", result)
+	} else {
+		log.Printf("%s", result)
+	}
+
+}
+
+func TestAddDynamic(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/metrics", nil)
 	response := executeRequest(req)
@@ -48,6 +59,27 @@ func TestMetrics(t *testing.T) {
 
 	if body := response.Body.String(); strings.Contains(body,
 		"A summary of the GC invocation durations") != true {
+		t.Errorf("Expected an array. Got %s", body)
+	}
+
+	if result := CustomRegistry(); strings.Contains(result,
+		"lithobates-catesbeianus") != true {
+		t.Errorf("Expected an array. Got %s", result)
+	}
+}
+
+func TestCustomMetric(t *testing.T) {
+
+	a.Metrics.Inc()
+	a.Metrics.Size(2718)
+
+	req, _ := http.NewRequest("GET", "/metrics", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	if body := response.Body.String(); strings.Contains(body,
+		"2718") != true {
 		t.Errorf("Expected an array. Got %s", body)
 	}
 
