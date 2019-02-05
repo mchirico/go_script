@@ -98,8 +98,8 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("LogProcess command: %s", s.JSON.Command)
-		log.Fatalf("LogProcess: %v", err)
+		log.Printf("LogProcess command: %s", s.JSON.Command)
+		log.Fatalf("(fatal) LogProcess: %v", err)
 	}
 
 	log.Println(string(output))

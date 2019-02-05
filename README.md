@@ -20,7 +20,28 @@ go get -u github.com/gorilla/mux
 
 ```bash
 export GOOS=linux
-export GOARCH=arm
+export GOARCH=amd64
+export CGO_ENABLED=0
 go build -o scriptLinux github.com/mchirico/go_script/cmd/script
 
+```
+
+## Table of Values
+
+```bash
+$GOOS     $GOARCH
+darwin    386      – 32 bit MacOSX
+darwin    amd64    – 64 bit MacOSX
+freebsd   386
+freebsd   amd64
+linux     386      – 32 bit Linux
+linux     amd64    – 64 bit Linux
+linux     arm      – RISC Linux
+netbsd    386
+netbsd    amd64
+openbsd   386
+openbsd   amd64
+plan9     386
+windows   386      – 32 bit Windows
+windows   amd64    – 64 bit Windows
 ```
