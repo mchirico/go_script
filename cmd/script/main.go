@@ -9,30 +9,53 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/mchirico/go_script/jsonconfig"
 	"github.com/mchirico/go_script/pkg"
+	"github.com/mchirico/go_script/yamlpkg"
 	"log"
 	"time"
 )
 
-func main() {
+var configFile string
 
-	var configFile string
-	flag.StringVar(&configFile, "configFile", ".script", "Configuration file")
+func init() {
+	flag.StringVar(&configFile, "configFile", "script.yaml", "Yaml Configuration file")
 	flag.Parse()
+}
 
+func createS(configFile string) pkg.Script {
 	s := pkg.Script{}
 
-	err := jsonconfig.ReadJSON(configFile, &s.JSON)
+	c := yamlpkg.Config{}
+	err := c.Read(configFile)
 	if err != nil {
+		c.SetDefault()
+		c.Write(configFile)
+		msg := `
+Could not read script.yaml. Creating default.
+You can run this command again to pickup default script.yaml
 
-		log.Fatalf("cannot read config:")
+`
+		log.Fatalf(msg)
 	}
+
+	s.JSON.DieAfterHours = c.Yaml.DieAfterHours
+	s.JSON.LogSizeLimit = c.Yaml.LogSizeLimit
+	s.JSON.Log = c.Yaml.Log
+	s.JSON.ArchiveLog = c.Yaml.ArchiveLog
+	s.JSON.LoopDelay = c.Yaml.LoopDelay
+	s.JSON.Command = c.Yaml.Command
+
+	return s
+}
+
+func main() {
+
+	s := createS(configFile)
 
 	ctx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(s.JSON.DieAfterHours)*time.Hour)
 	defer cancel()
 
-	s.Loop(ctx, 1000, 20000)
+	s.Loop(ctx, 100000, 20000)
 
 }
