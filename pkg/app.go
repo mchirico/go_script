@@ -31,6 +31,7 @@ type JSON struct {
 
 // ReadConfig reads configuration
 func (s *Script) ReadConfig() {
+
 	s.JSON.Command = "body() { IFS= read -r header; printf '%s %s\n %s\n' `date \"+%Y-%m %H:%M:%S\"` \"$header\"; \"$@\"; } && ps aux| body sort -n -r -k 4 && free"
 	s.JSON.Log = "/tmp/s.log"
 	s.JSON.ArchiveLog = "/tmp/archive/s.log"
@@ -81,18 +82,22 @@ func WriteData(file string, data []byte) (int, int64, error) {
 	}
 	defer f.Close()
 
-	n, e := f.Write(data)
 	if fi, err := f.Stat(); err != nil {
-		return n, -1, err
+		return 0, -1, err
 	} else {
-		f.WriteString(fmt.Sprintf("file size:%v\n", fi.Size()))
-		return n, fi.Size(), e
+		n, err := f.WriteString(fmt.Sprintf("file size:%v\n%s", fi.Size(), data))
+		if err == nil {
+			log.Printf("wrote:%v\nfileSize:%v\n", n, fi.Size()+int64(n))
+		}
+		return n, fi.Size(), err
 	}
 }
 
 // LogProcess return bytes written and total bytes in file
 func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
+	s.Lock()
+	defer s.Unlock()
 	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
 	cmd := exec.CommandContext(ctx, "sh", "-c", s.JSON.Command)
 
@@ -102,7 +107,6 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 		log.Fatalf("(fatal) LogProcess: %v", err)
 	}
 
-	log.Println(string(output))
 	n, fileSize, err := WriteData(s.JSON.Log, output)
 	if err != nil {
 		panic(err)
@@ -140,7 +144,7 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit
 
 	gen := func(ctx context.Context) <-chan []byte {
 		dst := make(chan []byte)
-		output := s.Process(milliseconds, sizeLimit)
+		var output []byte
 		go func() {
 			for {
 				select {
