@@ -26,11 +26,8 @@ matrix:
     - go test -race -v -coverprofile=c.out github.com/mchirico/go_script/...
     - gocov test github.com/mchirico/go_script/... > cc.out
     after_success:
-    - # mv c0.out  c.out
-    - # tail c1.out -n+1 >> c.out
+    - cp c.out coverage.txt
     - bash <(curl -s https://codecov.io/bash)
-    - pwd
-    - find . -iname '*c.out*'
     - "./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT"
 
 
