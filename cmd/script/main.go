@@ -56,6 +56,6 @@ func main() {
 		time.Duration(s.JSON.DieAfterHours)*time.Hour)
 	defer cancel()
 
-	s.Loop(ctx, 100000, 20000)
+	s.Loop(ctx, 100000)
 
 }

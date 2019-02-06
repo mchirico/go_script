@@ -80,16 +80,18 @@ func WriteData(file string, data []byte) (int, int64, error) {
 
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
+		log.Printf("Error WriteData. os.OpenFile %v", err)
 		return -1, -1, err
 	}
 	defer f.Close()
 
 	if fi, err := f.Stat(); err != nil {
+		log.Printf("Error on f.Stat() %v", err)
 		return 0, -1, err
 	} else {
-		n, err := f.WriteString(fmt.Sprintf("file size:%v\n%s", fi.Size(), data))
+		n, err := f.WriteString(fmt.Sprintf("file size: %v\n%s", fi.Size(), data))
 		if err == nil {
-			log.Printf("wrote:%v\nfileSize:%v\n", n, fi.Size()+int64(n))
+			log.Printf("wrote:%v\nfileSize: %v\n", n, fi.Size()+int64(n))
 			log.Printf("Space Available: %d\n,", SpaceAvailable(file))
 		}
 		return n, fi.Size(), err
@@ -112,7 +114,8 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
 	n, fileSize, err := WriteData(s.JSON.Log, output)
 	if err != nil {
-		panic(err)
+		log.Fatalf("LogProcess Fatal: %v", err)
+
 	}
 	return n, fileSize, output
 
@@ -127,6 +130,7 @@ func (s *Script) Process(milliseconds time.Duration, sizeLimit int64) []byte {
 
 	_, size, output := s.LogProcess(ctx)
 	if size > sizeLimit {
+		log.Printf("Zero out called: %v %v", size, sizeLimit)
 		ZeroOut(s.JSON.Log)
 	}
 	return output
@@ -143,7 +147,7 @@ func delay(delay int) {
 }
 
 // Loop through commands
-func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit int64) {
+func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
 
 	gen := func(ctx context.Context) <-chan []byte {
 		dst := make(chan []byte)
@@ -157,7 +161,7 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit
 					dst <- []byte{}
 					return // returning not to leak the goroutine
 				case dst <- output:
-					output = s.Process(milliseconds, sizeLimit)
+					output = s.Process(milliseconds, int64(s.JSON.LogSizeLimit))
 				}
 
 				delay(s.JSON.LoopDelay)
