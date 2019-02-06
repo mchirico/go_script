@@ -1,9 +1,12 @@
 package pkg
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/mchirico/go_script/analyze"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -78,14 +81,15 @@ func TestZeroOut(t *testing.T) {
 func TestLoopWithTimeout(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(),
-		2000*time.Millisecond)
+		20*time.Millisecond)
 	defer cancel()
 
 	s := Script{}
 	s.JSON.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
 	s.JSON.Log = tmpFile
+	s.JSON.LogSizeLimit = 2000
 
-	s.Loop(ctx, 1000, 200000)
+	s.Loop(ctx, 1000)
 
 	data, err := ReadFile(tmpFile)
 	if err != nil {
@@ -113,7 +117,7 @@ func TestLoopSize(t *testing.T) {
 	s.JSON.LoopDelay = 2
 	s.JSON.Log = tmpFile
 
-	s.Loop(ctx, 1000, 200000)
+	s.Loop(ctx, 1000)
 
 }
 
@@ -127,6 +131,70 @@ func TestGetDir(t *testing.T) {
 func TestSpaceAvailable(t *testing.T) {
 	space := SpaceAvailable(".")
 	if space <= 0 {
+		t.FailNow()
+	}
+
+}
+
+func TestWriteLog(t *testing.T) {
+	var str bytes.Buffer
+
+	log.SetOutput(&str)
+	log.Print("test")
+
+	fmt.Printf("Here's the log message: '%v'\n",
+		strings.TrimSuffix(str.String(), "\n"))
+}
+
+func TestWriteData_Append(t *testing.T) {
+
+	var str bytes.Buffer
+	log.SetOutput(&str)
+
+	file := "tmpFile"
+	os.RemoveAll(file)
+
+	data := []byte("BEGIN\n")
+	WriteData(file, data)
+
+	for i := 0; i < 300; i++ {
+		data = []byte(fmt.Sprintf("Filler Stuff: %d\n", i))
+		WriteData(file, data)
+	}
+
+	data = []byte("Final\n")
+	WriteData(file, data)
+
+	dat, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.FailNow()
+	}
+
+	if strings.Contains(string(dat), "BEGIN") != true {
+		t.Logf("BEGIN not found. Got: %s", string(dat))
+		t.FailNow()
+	}
+
+	if strings.Contains(str.String(), "fileSize: 10076") != true {
+		t.Logf("%s", str.String())
+		t.FailNow()
+	}
+
+}
+
+func TestWriteData_Error(t *testing.T) {
+	var str bytes.Buffer
+
+	log.SetOutput(&str)
+
+	a, b, err := WriteData("////", []byte("junk"))
+	if a != -1 && b != -1 && err == nil {
+		t.FailNow()
+	}
+
+	if strings.Contains(str.String(), "Error WriteData. os.OpenFile open") != true {
+		t.Logf("Expected:\n%s\n\nGot:\n%s\n",
+			"Error WriteData. os.OpenFile open", str.String())
 		t.FailNow()
 	}
 

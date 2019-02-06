@@ -3,7 +3,9 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9451bd1a6c801dd5eedb/test_coverage)](https://codeclimate.com/github/mchirico/go_script/test_coverage)
 [![codecov](https://codecov.io/gh/mchirico/go_script/branch/master/graph/badge.svg)](https://codecov.io/gh/mchirico/go_script)
 # go_script
-Go script to run troubleshooting commands without creating large logs
+Trouble shooting bash script, managed by go.
+
+
 
 
 ## Libraries Necessary
