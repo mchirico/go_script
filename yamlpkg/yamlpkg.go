@@ -10,12 +10,12 @@ import (
 )
 
 type y struct {
-	Command       string
-	Log           string
-	LogSizeLimit  int
-	ArchiveLog    string
-	LoopDelay     int
-	DieAfterHours int
+	Command       string `yaml:"Command"`
+	Log           string `yaml:"Log"`
+	LogSizeLimit  int    `yaml:"LogSizeLimit"`
+	ArchiveLog    string `yaml:"ArchiveLog"`
+	LoopDelay     int    `yaml:"LoopDelaySeconds"`
+	DieAfterHours int    `yaml:"DieAfterNumberHours"`
 }
 
 // Config entry point

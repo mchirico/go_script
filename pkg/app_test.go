@@ -116,3 +116,18 @@ func TestLoopSize(t *testing.T) {
 	s.Loop(ctx, 1000, 200000)
 
 }
+
+func TestGetDir(t *testing.T) {
+	dir := GetDir("junk")
+	if strings.Contains(dir, "/") != true {
+		t.Fatalf("Can't work working directory")
+	}
+}
+
+func TestSpaceAvailable(t *testing.T) {
+	space := SpaceAvailable(".")
+	if space <= 0 {
+		t.FailNow()
+	}
+
+}
