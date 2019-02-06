@@ -17,8 +17,19 @@ import (
 // Script is may way to these routines
 type Script struct {
 	sync.Mutex
-	JSON    JSON
-	Analyze analyze.A
+	JSON      JSON
+	Analyze   analyze.A
+	DeltaTime DeltaTimeStruct
+}
+
+// DeltaTimeStruct for Time Analysis
+type DeltaTimeStruct struct {
+	T0            time.Time
+	T1            time.Time
+	D0            time.Duration
+	D1            time.Duration
+	FileSize      int64
+	FileSizeDelta int64
 }
 
 // JSON read in from config
@@ -45,12 +56,6 @@ type Writer interface {
 	Write(file string, data []byte) (n int, err error)
 }
 
-// MakeDir only makes single directory
-func MakeDir(dir string) {
-	os.Mkdir(dir, 0777)
-	//os.Rename(main_file, old_file)
-}
-
 // ZeroOut file
 func ZeroOut(file string) (int64, error) {
 
@@ -64,7 +69,7 @@ func ZeroOut(file string) (int64, error) {
 	if fi, err := f.Stat(); err != nil {
 		return -1, err
 	} else {
-		f.WriteString(fmt.Sprintf("file size:%v\n", fi.Size()))
+		f.WriteString(fmt.Sprintf("ZeroOut size:%v\n", fi.Size()))
 		return fi.Size(), err
 	}
 }
@@ -103,7 +108,13 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 
 	s.Lock()
 	defer s.Unlock()
-	//cmd := exec.Command("sh", "-c", "date '+%Y-%m-%d %H:%M:%S\n' 1>&2;top -b -n1 -c -w 400 -o +%MEM|head -n30 1>&2")
+
+	s.DeltaTime.T1 = time.Now()
+	if s.DeltaTime.D0 == 0 {
+		s.DeltaTime.T0 = time.Now()
+	}
+	s.DeltaTime.D0 = time.Since(s.DeltaTime.T0)
+
 	cmd := exec.CommandContext(ctx, "sh", "-c", s.JSON.Command)
 
 	output, err := cmd.CombinedOutput()
@@ -117,6 +128,11 @@ func (s *Script) LogProcess(ctx context.Context) (int, int64, []byte) {
 		log.Fatalf("LogProcess Fatal: %v", err)
 
 	}
+	s.DeltaTime.D1 = time.Since(s.DeltaTime.T1)
+	s.DeltaTime.T0 = time.Now()
+	s.DeltaTime.FileSizeDelta = int64(n)
+	s.DeltaTime.FileSize = fileSize + int64(n)
+
 	return n, fileSize, output
 
 }
@@ -148,7 +164,6 @@ func delay(delay int) {
 
 // Loop through commands
 func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
-
 	gen := func(ctx context.Context) <-chan []byte {
 		dst := make(chan []byte)
 		var output []byte
@@ -186,7 +201,7 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
 
 }
 
-// GetDir clean up function
+// GetDir from directory file string
 func GetDir(file string) string {
 	dir, _ := filepath.Split(file)
 	if dir != "" {
