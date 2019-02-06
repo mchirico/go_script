@@ -8,7 +8,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -88,6 +90,7 @@ func WriteData(file string, data []byte) (int, int64, error) {
 		n, err := f.WriteString(fmt.Sprintf("file size:%v\n%s", fi.Size(), data))
 		if err == nil {
 			log.Printf("wrote:%v\nfileSize:%v\n", n, fi.Size()+int64(n))
+			log.Printf("Space Available: %d\n,", SpaceAvailable(file))
 		}
 		return n, fi.Size(), err
 	}
@@ -177,4 +180,26 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration, sizeLimit
 
 	}
 
+}
+
+// GetDir clean up function
+func GetDir(file string) string {
+	dir, _ := filepath.Split(file)
+	if dir != "" {
+		return dir
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Can't write to directory")
+	}
+	return dir
+}
+
+// SpaceAvailable on directly extracted from file name
+func SpaceAvailable(file string) uint64 {
+	dir := GetDir(file)
+	var stat syscall.Statfs_t
+	syscall.Statfs(dir, &stat)
+	// Available blocks * size per block = available space in bytes
+	return stat.Bavail * uint64(stat.Bsize)
 }
