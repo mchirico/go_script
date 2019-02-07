@@ -23,8 +23,8 @@ matrix:
     - chmod +x ./cc-test-reporter
     - "./cc-test-reporter before-build"
     script:
-    - go test -race -v -coverprofile=c.out github.com/mchirico/go_script/...
-    - gocov test github.com/mchirico/go_script/... > cc.out
+    - go test -race -v -coverprofile=c.out ./...
+    - gocov test ./... > cc.out
     after_success:
     - cp c.out coverage.txt
     - bash <(curl -s https://codecov.io/bash)
