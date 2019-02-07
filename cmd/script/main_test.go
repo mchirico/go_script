@@ -6,6 +6,8 @@ import (
 	"github.com/mchirico/go_script/pkg"
 	"log"
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -17,6 +19,8 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
+
+var file = "_fixture_test.yaml"
 
 // There's an issue with format... going back and forth
 func TestReadJson(t *testing.T) {
@@ -56,4 +60,30 @@ func TestReadJson(t *testing.T) {
 
 		t.Fatalf("s=%v", s)
 	}
+}
+
+func Test_CreateS(t *testing.T) {
+	if os.Getenv("BE_CRASHER") == "1" {
+		os.RemoveAll(file)
+		createS(file)
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=Test_CreateS")
+	cmd.Env = append(os.Environ(), "BE_CRASHER=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+
+		// Now go though 2nd run
+
+		expected := `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
+
+		s := createS(file)
+		if strings.Contains(s.JSON.Command, expected) != true {
+			t.Fatalf("Expected:\n%s\n\nGot:\n%s\n\n",
+				s.JSON.Command, expected)
+		}
+		return
+	}
+	t.Fatalf("process ran with err %v, want exit status 1", err)
 }
