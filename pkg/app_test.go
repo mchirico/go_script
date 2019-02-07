@@ -61,6 +61,30 @@ func logProcessTimeout() {
 
 }
 
+func TestScript_LogProcess_TimeDelta(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(),
+		100000*time.Millisecond)
+	defer cancel()
+
+	s := Script{}
+	s.JSON.Command = `sleep 3`
+	s.JSON.Log = tmpFile
+	s.LogProcess(ctx)
+
+	expected := int64(13)
+	if s.DeltaTime.FileSize != expected {
+		t.Fatalf("Expected filesize: %d Got: %d\n", expected, s.DeltaTime.FileSize)
+	}
+
+	if s.DeltaTime.D1 >= 3*time.Second && s.DeltaTime.D1 <= 4*time.Second {
+		t.Logf("Time good")
+	} else {
+		t.FailNow()
+	}
+
+}
+
 func TestZeroOut(t *testing.T) {
 
 	if n, err := ZeroOut(tmpFile); err != nil && n != 0 {
