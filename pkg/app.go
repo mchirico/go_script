@@ -169,6 +169,8 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
 		var output []byte
 		go func() {
 			for {
+				output = s.Process(milliseconds, int64(s.JSON.LogSizeLimit))
+
 				select {
 
 				case <-ctx.Done():
@@ -176,10 +178,8 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
 					dst <- []byte{}
 					return // returning not to leak the goroutine
 				case dst <- output:
-					output = s.Process(milliseconds, int64(s.JSON.LogSizeLimit))
+					delay(s.JSON.LoopDelay)
 				}
-
-				delay(s.JSON.LoopDelay)
 
 			}
 		}()
