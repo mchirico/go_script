@@ -43,15 +43,6 @@ type JSON struct {
 	DieAfterSeconds int    `json:"dieAfterNumSeconds"`
 }
 
-// ReadConfig reads configuration
-func (s *Script) ReadConfig() {
-
-	s.JSON.Command = "body() { IFS= read -r header; printf '%s %s\n %s\n' `date \"+%Y-%m %H:%M:%S\"` \"$header\"; \"$@\"; } && ps aux| body sort -n -r -k 4 && free"
-	s.JSON.Log = "/tmp/s.log"
-	s.JSON.ArchiveLog = "/tmp/archive/s.log"
-
-}
-
 // Writer for future implementation
 type Writer interface {
 	Write(file string, data []byte) (n int, err error)
