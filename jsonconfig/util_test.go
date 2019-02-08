@@ -1,8 +1,11 @@
 package jsonconfig
 
 import (
+	"bytes"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -32,6 +35,57 @@ func SetupFunction() string {
 
 func TeardownFunction(tmpFile string) {
 	os.RemoveAll(tmpFile)
+
+}
+
+func TestReadFileError(t *testing.T) {
+
+	var str bytes.Buffer
+	log.SetOutput(&str)
+
+	file := "///"
+	m := map[string]string{}
+	err := ReadJSON(file, m)
+	if err == nil {
+		t.FailNow()
+	}
+
+	expected := `Can't read file`
+
+	if strings.Contains(str.String(), expected) != true {
+		t.Logf("Expected: %s\n", expected)
+		t.Logf("Got: %s\n", str.String())
+	}
+
+}
+
+func TestReadJSONError(t *testing.T) {
+
+	var str bytes.Buffer
+	log.SetOutput(&str)
+
+	file := "_junk_bad"
+	d1 := []byte("hello\ngo\n")
+	ioutil.WriteFile(file, d1, 0644)
+
+	m := map[string]string{}
+	err := ReadJSON(file, m)
+	if err == nil {
+		t.FailNow()
+	}
+
+	expected := `invalid character 'h' looking for beginning of value`
+	if strings.Contains(err.Error(), expected) != true {
+		t.Logf("Expected: %s\n", expected)
+		t.Logf("Got: %s\n", err.Error())
+		t.FailNow()
+	}
+
+	expected = `json.Unmarshal error`
+	if strings.Contains(str.String(), expected) != true {
+		t.Logf("Expected: %s\n", expected)
+		t.Logf("Got: %s\n", str.String())
+	}
 
 }
 

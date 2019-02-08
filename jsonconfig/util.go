@@ -3,6 +3,7 @@ package jsonconfig
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -11,11 +12,13 @@ func ReadJSON(file string, v interface{}) error {
 
 	data, err := ReadFile(file)
 	if err != nil {
+		log.Printf("Can't read file")
 		return err
 	}
 
 	err = json.Unmarshal([]byte(data), &v)
 	if err != nil {
+		log.Printf("json.Unmarshal error")
 		return err
 	}
 	return nil
