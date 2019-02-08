@@ -26,7 +26,6 @@ Instead of using the following:
 */
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
@@ -126,17 +125,6 @@ func (a *App) info(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Can not write response: %v\n", err)
 	}
 
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_, err := w.Write(response)
-	if err != nil {
-		log.Printf("Can not write response: %v\n", response)
-	}
 }
 
 // CustomRegistry registers a custom sample
