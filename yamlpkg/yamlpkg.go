@@ -10,12 +10,13 @@ import (
 )
 
 type y struct {
-	Command       string `yaml:"Command"`
-	Log           string `yaml:"Log"`
-	LogSizeLimit  int    `yaml:"LogSizeLimit"`
-	ArchiveLog    string `yaml:"ArchiveLog"`
-	LoopDelay     int    `yaml:"LoopDelaySeconds"`
-	DieAfterHours int    `yaml:"DieAfterNumberHours"`
+	Command         string `yaml:"Command"`
+	Log             string `yaml:"Log"`
+	LogSizeLimit    int    `yaml:"LogSizeLimit"`
+	ArchiveLog      string `yaml:"ArchiveLog"`
+	LoopDelay       int    `yaml:"LoopDelaySeconds"`
+	DieAfterHours   int    `yaml:"DieAfterNumberHours"`
+	DieAfterSeconds int    `yaml:"DieAfterNumberSeconds"`
 }
 
 // Config entry point
@@ -68,7 +69,8 @@ func (c *Config) SetDefault() {
 	c.Yaml.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
 	c.Yaml.Log = "mem.log"
 	c.Yaml.LoopDelay = 20
-	c.Yaml.LogSizeLimit = 40000
+	c.Yaml.LogSizeLimit = 4000000
 	c.Yaml.ArchiveLog = "memarchive.log"
 	c.Yaml.DieAfterHours = 200
+	c.Yaml.DieAfterSeconds = 2
 }

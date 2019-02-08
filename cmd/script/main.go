@@ -39,6 +39,7 @@ You can run this command again to pickup default script.yaml
 	}
 
 	s.JSON.DieAfterHours = c.Yaml.DieAfterHours
+	s.JSON.DieAfterSeconds = c.Yaml.DieAfterSeconds
 	s.JSON.LogSizeLimit = c.Yaml.LogSizeLimit
 	s.JSON.Log = c.Yaml.Log
 	s.JSON.ArchiveLog = c.Yaml.ArchiveLog
@@ -53,7 +54,7 @@ func main() {
 	s := createS(configFile)
 
 	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(s.JSON.DieAfterHours)*time.Hour)
+		time.Duration(s.JSON.DieAfterHours)*time.Hour+time.Duration(3)*time.Second)
 	defer cancel()
 
 	s.Loop(ctx, 100000)
