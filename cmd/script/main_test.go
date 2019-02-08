@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/mchirico/go_script/jsonconfig"
 	"github.com/mchirico/go_script/pkg"
+	"github.com/mchirico/go_script/yamlpkg"
 	"log"
 	"os"
 	"os/exec"
@@ -54,10 +56,8 @@ func TestReadJson(t *testing.T) {
 	}
 
 	j = pkg.JSON{}
-
 	err = jsonconfig.ReadJSON(file, &j)
 	if err != nil {
-
 		t.Fatalf("s=%v", s)
 	}
 }
@@ -86,4 +86,38 @@ func Test_CreateS(t *testing.T) {
 		return
 	}
 	t.Fatalf("process ran with err %v, want exit status 1", err)
+}
+
+func Test_Main(t *testing.T) {
+
+	var str bytes.Buffer
+	log.SetOutput(&str)
+
+	c := yamlpkg.Config{}
+	c.SetDefault()
+	c.Write(configFile)
+
+	err := c.Read(configFile)
+	if err != nil {
+		t.FailNow()
+	}
+
+	c.Yaml.DieAfterHours = 0
+	c.Yaml.LoopDelay = 1
+	c.Yaml.LogSizeLimit = 300
+	c.Write(configFile)
+	main()
+
+	expected := []string{}
+	expected = append(expected, "Zero out called:")
+	expected = append(expected, "Space Available")
+	expected = append(expected, "wrote:")
+	expected = append(expected, "fileSize:")
+
+	for index, _ := range expected {
+		if strings.Contains(str.String(), expected[index]) != true {
+			t.FailNow()
+		}
+	}
+
 }

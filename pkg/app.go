@@ -34,12 +34,13 @@ type DeltaTimeStruct struct {
 
 // JSON read in from config
 type JSON struct {
-	Command       string `json:"command"`
-	Log           string `json:"log"`
-	LogSizeLimit  int    `json:"logSizeLimit"`
-	ArchiveLog    string `json:"logArchive"`
-	LoopDelay     int    `json:"loopDelay"`
-	DieAfterHours int    `json:"dieAfterNumHours"`
+	Command         string `json:"command"`
+	Log             string `json:"log"`
+	LogSizeLimit    int    `json:"logSizeLimit"`
+	ArchiveLog      string `json:"logArchive"`
+	LoopDelay       int    `json:"loopDelay"`
+	DieAfterHours   int    `json:"dieAfterNumHours"`
+	DieAfterSeconds int    `json:"dieAfterNumSeconds"`
 }
 
 // ReadConfig reads configuration
