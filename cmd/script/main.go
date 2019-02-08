@@ -22,7 +22,7 @@ func init() {
 	flag.Parse()
 }
 
-func createS(configFile string) pkg.Script {
+func createS(configFile string) (pkg.Script, error) {
 	s := pkg.Script{}
 
 	c := yamlpkg.Config{}
@@ -35,7 +35,8 @@ Could not read script.yaml. Creating default.
 You can run this command again to pickup default script.yaml
 
 `
-		log.Fatalf(msg)
+		log.Print(msg)
+		return s, err
 	}
 
 	s.JSON.DieAfterHours = c.Yaml.DieAfterHours
@@ -46,12 +47,15 @@ You can run this command again to pickup default script.yaml
 	s.JSON.LoopDelay = c.Yaml.LoopDelay
 	s.JSON.Command = c.Yaml.Command
 
-	return s
+	return s, err
 }
 
 func main() {
 
-	s := createS(configFile)
+	s, err := createS(configFile)
+	if err != nil {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(s.JSON.DieAfterHours)*time.Hour+time.Duration(3)*time.Second)

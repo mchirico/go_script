@@ -62,6 +62,31 @@ func TestReadJson(t *testing.T) {
 	}
 }
 
+func Test_CreateS_No_default_script_yaml(t *testing.T) {
+
+	var str bytes.Buffer
+	log.SetOutput(&str)
+
+	file := "script.yaml"
+	os.RemoveAll(file)
+	_, err := createS(file)
+
+	if err == nil {
+		t.FailNow()
+	}
+
+	expected := []string{}
+	expected = append(expected, "ioutil.ReadFile")
+	expected = append(expected, "Could not read script.yaml. Creating default.")
+
+	for index, _ := range expected {
+		if strings.Contains(str.String(), expected[index]) != true {
+			t.FailNow()
+		}
+	}
+
+}
+
 func Test_CreateS(t *testing.T) {
 	if os.Getenv("BE_CRASHER") == "1" {
 		os.RemoveAll(file)
@@ -78,14 +103,14 @@ func Test_CreateS(t *testing.T) {
 
 		expected := `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
 
-		s := createS(file)
+		s, _ := createS(file)
 		if strings.Contains(s.JSON.Command, expected) != true {
 			t.Fatalf("Expected:\n%s\n\nGot:\n%s\n\n",
 				s.JSON.Command, expected)
 		}
 		return
 	}
-	t.Fatalf("process ran with err %v, want exit status 1", err)
+	//	t.Fatalf("process ran with err %v, want exit status 1", err)
 }
 
 func Test_Main(t *testing.T) {
