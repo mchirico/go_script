@@ -58,7 +58,8 @@ func main() {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(s.JSON.DieAfterHours)*time.Hour+time.Duration(3)*time.Second)
+		time.Duration(s.JSON.DieAfterHours)*
+			time.Hour+time.Duration(s.JSON.DieAfterSeconds)*time.Second)
 	defer cancel()
 
 	s.Loop(ctx, 100000)
