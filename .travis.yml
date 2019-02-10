@@ -23,7 +23,7 @@ matrix:
     - chmod +x ./cc-test-reporter
     - "./cc-test-reporter before-build"
     script:
-    - go test -race -v -coverprofile=c.out ./...
+    - go test -race -v -coverprofile=c.out ./... && echo -e "\n\n\n SUCCESS \n\n"
     - gocov test ./... > cc.out
     after_success:
     - cp c.out coverage.txt

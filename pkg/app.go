@@ -160,6 +160,7 @@ func (s *Script) Loop(ctx context.Context, milliseconds time.Duration) {
 		dst := make(chan []byte)
 		var output []byte
 		go func() {
+			defer close(dst)
 			for {
 				output = s.Process(milliseconds, int64(s.JSON.LogSizeLimit))
 

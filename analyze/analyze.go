@@ -1,5 +1,16 @@
 package analyze
 
+/*
+Idea to look at:
+
+https://play.golang.org/p/yWAxoaJE0PJ
+
+
+
+
+
+*/
+
 import "fmt"
 
 // A the way to pass data to functions

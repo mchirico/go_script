@@ -30,7 +30,7 @@ func SetupFunction() {
 
 func TeardownFunction() {
 	os.RemoveAll(tmpFile)
-	//os.RemoveAll(dir)
+
 }
 
 func TestLogProcessKill(t *testing.T) {
@@ -111,7 +111,7 @@ func TestLoopWithTimeout(t *testing.T) {
 	s := Script{}
 	s.JSON.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
 	s.JSON.Log = tmpFile
-	s.JSON.LogSizeLimit = 2000
+	s.JSON.LogSizeLimit = 20000
 
 	s.Loop(ctx, 1000)
 
@@ -206,13 +206,17 @@ func TestWriteData_Append(t *testing.T) {
 
 }
 
+// Test fails in travis
 func TestWriteData_Error(t *testing.T) {
 	var str bytes.Buffer
 
 	log.SetOutput(&str)
 
-	a, b, err := WriteData("////", []byte("junk"))
+	t.Logf("TestWriteData_Error some times fails in travis")
+
+	a, b, err := WriteData("/DummyDIR/ShouldFail//", []byte("junk"))
 	if a != -1 && b != -1 && err == nil {
+		t.Logf("TRUE failure..")
 		t.FailNow()
 	}
 
@@ -222,4 +226,12 @@ func TestWriteData_Error(t *testing.T) {
 		t.FailNow()
 	}
 
+	t.Logf("TestWriteData_Error SUCCESS!!")
+}
+
+func TestLast(t *testing.T) {
+
+	t.Logf("last test..")
+	t.Logf("Trying to find out why last test some times")
+	t.Logf("fails in travis")
 }
