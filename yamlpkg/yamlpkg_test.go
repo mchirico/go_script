@@ -82,7 +82,7 @@ func TestReadWrite(t *testing.T) {
 
 	c := Config{}
 
-	c.Yaml.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	c.Yaml.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m-%d %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
 	c.Yaml.Log = "mem.log"
 	c.Yaml.LoopDelay = 20
 	c.Yaml.LogSizeLimit = 40000
