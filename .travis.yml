@@ -6,7 +6,7 @@ matrix:
     go:
     - 1.11
     env:
-    - GOMAXPROCS=4
+    - GOMAXPROCS=9
     os:
     - linux
     install:

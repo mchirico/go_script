@@ -2,6 +2,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/9451bd1a6c801dd5eedb/maintainability)](https://codeclimate.com/github/mchirico/go_script/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9451bd1a6c801dd5eedb/test_coverage)](https://codeclimate.com/github/mchirico/go_script/test_coverage)
 [![codecov](https://codecov.io/gh/mchirico/go_script/branch/master/graph/badge.svg)](https://codecov.io/gh/mchirico/go_script)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mchirico/go_script)](https://goreportcard.com/report/github.com/mchirico/go_script)
 # go_script
 Trouble shooting bash script, managed by go.
 

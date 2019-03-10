@@ -141,8 +141,11 @@ func Test_Main(t *testing.T) {
 
 	for index, _ := range expected {
 		if strings.Contains(str.String(), expected[index]) != true {
+			t.Fatalf("❌ Error")
 			t.FailNow()
 		}
 	}
+
+	t.Logf("✅ Successful execution of Test_Main")
 
 }

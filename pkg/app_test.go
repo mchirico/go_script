@@ -45,7 +45,7 @@ func TestLogProcessKill(t *testing.T) {
 	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 		return
 	}
-	t.Fatalf("process ran with err %v, want exit status 1", err)
+	t.Fatalf("❌ Error: process ran with err %v, want exit status 1", err)
 }
 
 func logProcessTimeout() {
@@ -74,7 +74,7 @@ func TestScript_LogProcess_TimeDelta(t *testing.T) {
 
 	expected := int64(13)
 	if s.DeltaTime.FileSize != expected {
-		t.Fatalf("Expected filesize: %d Got: %d\n", expected, s.DeltaTime.FileSize)
+		t.Fatalf("❌ Expected filesize: %d Got: %d\n", expected, s.DeltaTime.FileSize)
 	}
 
 	if s.DeltaTime.D1 >= 3*time.Second && s.DeltaTime.D1 <= 4*time.Second {
@@ -82,7 +82,7 @@ func TestScript_LogProcess_TimeDelta(t *testing.T) {
 	} else {
 		t.FailNow()
 	}
-
+	t.Logf("✅ Successful execution of TestScript_LogProcess_TimeDelta")
 }
 
 func TestZeroOut(t *testing.T) {
@@ -93,11 +93,11 @@ func TestZeroOut(t *testing.T) {
 
 	if n, tot, err := WriteData(tmpFile, []byte("This is a test")); err !=
 		nil || tot <= 0 || n <= 0 {
-		t.Errorf("Can't write data to temp file")
+		t.Errorf("❌ Can't write data to temp file")
 	}
 
 	if n, err := ZeroOut(tmpFile); err != nil && n != 0 {
-		t.FailNow()
+		t.Fatalf("❌ Error")
 	}
 
 }
@@ -117,13 +117,13 @@ func TestLoopWithTimeout(t *testing.T) {
 
 	data, err := ReadFile(tmpFile)
 	if err != nil {
-		t.Fatalf("Got err reading %v err: %v\n", tmpFile, err)
+		t.Fatalf("❌ Got err reading %v err: %v\n", tmpFile, err)
 	}
 
 	if strings.Contains(data, "STAT START") != true {
-		t.Fatalf("Expected: %v, got: %v\n", "STAT STARTED", data)
+		t.Fatalf("❌ Expected: %v, got: %v\n", "STAT STARTED", data)
 	}
-
+	t.Logf("✅ Successful execution of TestLoopWithTimeout")
 }
 
 // TODO: Implement this...
@@ -148,16 +148,16 @@ func TestLoopSize(t *testing.T) {
 func TestGetDir(t *testing.T) {
 	dir := GetDir("junk")
 	if strings.Contains(dir, "/") != true {
-		t.Fatalf("Can't work working directory")
+		t.Fatalf("❌ Can't work working directory")
 	}
 }
 
 func TestSpaceAvailable(t *testing.T) {
 	space := SpaceAvailable(".")
 	if space <= 0 {
-		t.FailNow()
+		t.Fatalf("❌ Error: TestSpaceAvailable")
 	}
-
+	t.Logf("✅ Successful execution of TestSpaceAvailable")
 }
 
 func TestWriteLog(t *testing.T) {
@@ -191,19 +191,19 @@ func TestWriteData_Append(t *testing.T) {
 
 	dat, err := ioutil.ReadFile(file)
 	if err != nil {
-		t.FailNow()
+		t.Fatalf("❌ Error")
 	}
 
 	if strings.Contains(string(dat), "BEGIN") != true {
 		t.Logf("BEGIN not found. Got: %s", string(dat))
-		t.FailNow()
+		t.Fatalf("❌ Error")
 	}
 
 	if strings.Contains(str.String(), "fileSize: 10076") != true {
-		t.Logf("%s", str.String())
-		t.FailNow()
+		t.Fatalf("❌ Error: %s", str.String())
 	}
 
+	t.Logf("✅ Successful execution of TestWriteData_Append")
 }
 
 // Test fails in travis
@@ -212,26 +212,22 @@ func TestWriteData_Error(t *testing.T) {
 
 	log.SetOutput(&str)
 
-	t.Logf("TestWriteData_Error some times fails in travis")
-
 	a, b, err := WriteData("/DummyDIR/ShouldFail//", []byte("junk"))
 	if a != -1 && b != -1 && err == nil {
-		t.Logf("TRUE failure..")
-		t.FailNow()
+		t.Fatalf("❌ TRUE failure..")
 	}
 
 	if strings.Contains(str.String(), "Error WriteData. os.OpenFile open") != true {
-		t.Logf("Expected:\n%s\n\nGot:\n%s\n",
+		t.Fatalf("❌ Expected:\n%s\n\nGot:\n%s\n",
 			"Error WriteData. os.OpenFile open", str.String())
-		t.FailNow()
 	}
 
-	t.Logf("TestWriteData_Error SUCCESS!!")
+	t.Logf("✅ TestWriteData_Error SUCCESS!!")
 }
 
 func TestLast(t *testing.T) {
 
 	t.Logf("last test..")
 	t.Logf("Trying to find out why last test some times")
-	t.Logf("fails in travis")
+	t.Logf("fails in travis.")
 }
