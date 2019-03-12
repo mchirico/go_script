@@ -66,7 +66,7 @@ func (c *Config) Read(file string) error {
 func (c *Config) SetDefault() {
 	c.Lock()
 	defer c.Unlock()
-	c.Yaml.Command = `body() { IFS= read -r header; printf 'LogWrite: %s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
+	c.Yaml.Command = `body() { IFS= read -r header; printf 'LogWrite: %s %s\n %s\n' $(date "+%Y-%m-%d %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
 	c.Yaml.Log = "mem.log"
 	c.Yaml.LoopDelay = 20
 	c.Yaml.LogSizeLimit = 4000000

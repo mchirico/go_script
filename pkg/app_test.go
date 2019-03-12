@@ -109,7 +109,7 @@ func TestLoopWithTimeout(t *testing.T) {
 	defer cancel()
 
 	s := Script{}
-	s.JSON.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	s.JSON.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m-%d %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
 	s.JSON.Log = tmpFile
 	s.JSON.LogSizeLimit = 20000
 

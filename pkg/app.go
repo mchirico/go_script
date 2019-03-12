@@ -48,7 +48,7 @@ type Writer interface {
 	Write(file string, data []byte) (n int, err error)
 }
 
-// ZeroOut file
+// ZeroOut file: At this time no reason for backup.
 func ZeroOut(file string) (int64, error) {
 
 	_ = os.Remove(file)

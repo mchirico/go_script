@@ -34,7 +34,7 @@ func TestReadJson(t *testing.T) {
 	j.Log = "/tmp/mem.log"
 	j.LogSizeLimit = 40000
 	j.Command = `./cmd.sh`
-	j.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
+	j.Command = `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m-%d %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4|head -n4`
 
 	j.ArchiveLog = "/tmp/archive.log"
 	j.DieAfterHours = 200
@@ -79,7 +79,7 @@ func Test_CreateS_No_default_script_yaml(t *testing.T) {
 	expected = append(expected, "ioutil.ReadFile")
 	expected = append(expected, "Could not read script.yaml. Creating default.")
 
-	for index, _ := range expected {
+	for index := range expected {
 		if strings.Contains(str.String(), expected[index]) != true {
 			t.FailNow()
 		}
@@ -101,7 +101,7 @@ func Test_CreateS(t *testing.T) {
 
 		// Now go though 2nd run
 
-		expected := `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
+		expected := `body() { IFS= read -r header; printf '%s %s\n %s\n' $(date "+%Y-%m-%d %H:%M:%S") "$header"; "$@"; } && ps aux| body sort -n -r -k 4`
 
 		s, _ := createS(file)
 		if strings.Contains(s.JSON.Command, expected) != true {
@@ -139,7 +139,7 @@ func Test_Main(t *testing.T) {
 	expected = append(expected, "wrote:")
 	expected = append(expected, "fileSize:")
 
-	for index, _ := range expected {
+	for index := range expected {
 		if strings.Contains(str.String(), expected[index]) != true {
 			t.Fatalf("❌ Error")
 			t.FailNow()
