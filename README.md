@@ -23,6 +23,53 @@ go get gopkg.in/yaml.v2
 ## Build
 
 ```bash
+mkdir -p scratch && cd scratch
+git clone https://github.com/mchirico/go_script.git
+cd go_script
+go mod init 
+
+
+go build ./cmd/script
+
+# Yes, run this twice to create script file.
+./script
+./script
+
+# Want to run tests?
+
+go build ./...
+go test ./...
+
+```
+
+
+# Build with vendor
+
+```bash
+
+mkdir -p scratch && cd scratch
+git clone https://github.com/mchirico/go_script.git
+cd go_script
+
+go mod init
+# Below will put all packages in a vendor folder
+go mod vendor
+
+export GO111MODULE=on
+
+go test -v -mod=vendor ./...
+
+# Don't forget the "." in "./cmd/script" below
+go build -v -mod=vendor ./cmd/script
+
+
+
+```
+
+
+# Build for Linux on a Mac
+
+```bash
 export GOOS=linux
 export GOARCH=amd64
 export CGO_ENABLED=0

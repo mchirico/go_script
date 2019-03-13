@@ -4,7 +4,7 @@ matrix:
   include:
   - language: go
     go:
-    - 1.11
+    - 1.12.x
     env:
     - GOMAXPROCS=9
     os:
