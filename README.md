@@ -51,11 +51,12 @@ mkdir -p scratch && cd scratch
 git clone https://github.com/mchirico/go_script.git
 cd go_script
 
+export GO111MODULE=on
 go mod init
 # Below will put all packages in a vendor folder
 go mod vendor
 
-export GO111MODULE=on
+
 
 go test -v -mod=vendor ./...
 
