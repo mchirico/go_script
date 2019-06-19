@@ -1,0 +1,27 @@
+
+resources:
+
+- name: go_script
+  type: git
+  source:
+    uri: https://github.com/mchirico/go_script.git
+    branch: next
+
+###############################################################################
+
+jobs:
+
+- name: unit
+  plan:
+  - get: go_script
+    trigger: true
+  - task: unit
+    file: go_script/ci/unit-task.yml
+
+- name: build
+  plan:
+  - get: go_script
+    trigger: true
+    passed: [unit]
+  - task: build
+    file: go_script/ci/build-task.yml
